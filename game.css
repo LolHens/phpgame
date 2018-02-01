@@ -1,0 +1,77 @@
+body {
+    overflow: hidden;
+}
+
+.player {
+    position: absolute;
+    height: 100px;
+    z-index: 20;
+}
+
+img {
+    height: 100%;
+    z-index: inherit;
+}
+
+.bullet {
+    position: absolute;
+    height: 40px;
+    z-index: 10;
+    animation-duration: 4000ms;
+    animation-timing-function: linear;
+    animation-fill-mode: forwards;
+}
+
+.bullet[data-r="0"] {
+    animation-name: up;
+    transform: rotate(0deg);
+}
+
+.bullet[data-r="1"] {
+    animation-name: right;
+    transform: rotate(90deg);
+}
+
+.bullet[data-r="2"] {
+    animation-name: down;
+    transform: rotate(180deg);
+}
+
+.bullet[data-r="3"] {
+    animation-name: left;
+    transform: rotate(270deg);
+}
+
+@keyframes up {
+    100% {
+        transform: translate(0, -1000px) rotate(0deg);
+    }
+}
+
+@keyframes right {
+    100% {
+        transform: translate(1000px, 0) rotate(90deg);
+    }
+}
+
+@keyframes down {
+    100% {
+        transform: translate(0, 1000px) rotate(180deg);
+    }
+}
+
+@keyframes left {
+    100% {
+        transform: translate(-1000px, 0) rotate(270deg);
+    }
+}
+
+.button {
+    width: auto;
+    height: 100px;
+}
+
+#controls {
+    position: relative;
+    z-index: 30;
+}
