@@ -1,7 +1,5 @@
-<!DOCTYPE html>
-<html lang="de">
-
 <?php
+
 /**
  * Created by IntelliJ IDEA.
  * User: pierr
@@ -9,13 +7,7 @@
  * Time: 12:33
  */
 
-$dbHost = "localhost";
-$dbUser = "root";
-$dbPass = "";
-$dbName = "game";
-
-$dbConn = mysqli_connect($dbHost, $dbUser, $dbPass, $dbName)
-or exit("Keine Verbindung zu MySQL");
+include "dbconn.php";
 
 function degrees($r)
 {
@@ -61,28 +53,32 @@ function bulletTile($tileX, $tileY, $r, $offsetPercent)
     renderBullet($tileX * 100 + 20, $tileY * 100 + 50, $r, $offsetPercent);
 }
 
-function listPlayers($dbConn)
+function listPlayers($dbConn, $cX, $cY, $pX, $pY)
 {
     $result = mysqli_query($dbConn, "SELECT * FROM players WHERE dead = 0");
     while ($row = mysqli_fetch_array($result)) {
-        playerTile($row["playername"], $row["score"], $row["x"], $row["y"], $row["r"]);
+        $x = $row["x"] + $cX - $pX;
+        $y = $row["y"] + $cY - $pY;
+        playerTile($row["playername"], $row["score"], $x, $y, $row["r"]);
     }
 }
 
-function listBullets($dbConn)
+function listBullets($dbConn, $cX, $cY, $pX, $pY)
 {
     $result = mysqli_query($dbConn, "SELECT * FROM bullets");
     $timestamp = nowWithMillis();
     while ($row = mysqli_fetch_array($result)) {
+        $x = $row["x"] + $cX - $pX;
+        $y = $row["y"] + $cY - $pY;
         $offset = milliDiff($timestamp, $row["lastupdated"]);
-        bulletTile($row["x"], $row["y"], $row["r"], $offset / 4);
+        bulletTile($x, $y, $row["r"], $offset / 4);
     }
 }
 
 function cleanPlayers($dbConn)
 {
     $stmt = mysqli_prepare($dbConn, "DELETE FROM players WHERE lastupdated < ?");
-    $timeout = date('Y-m-d G:i:s', time() - strtotime("5 seconds", 0));
+    $timeout = date('Y-m-d G:i:s', time() - strtotime("10 seconds", 0));
     mysqli_stmt_bind_param($stmt, "s", $timeout);
     mysqli_stmt_execute($stmt);
 }
@@ -220,6 +216,12 @@ function hit($dbConn, $playername)
     $stmt = mysqli_prepare($dbConn, "UPDATE players SET dead = 1 WHERE playername = ?");
     mysqli_stmt_bind_param($stmt, "s", $playername);
     mysqli_stmt_execute($stmt);
+    $score = getScore($dbConn, $playername);
+    if ($score > 0) {
+        $stmt = mysqli_prepare($dbConn, "INSERT INTO leaderboard (playername, score) Values (?, $score)");
+        mysqli_stmt_bind_param($stmt, "s", $playername);
+        mysqli_stmt_execute($stmt);
+    }
 }
 
 function checkCollisions($dbConn)
@@ -231,26 +233,15 @@ function checkCollisions($dbConn)
     }
 }
 
-function genToken($length)
-{
-    $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    $charactersLength = strlen($characters);
-    $randomString = '';
-    for ($i = 0; $i < $length; $i++) {
-        $randomString .= $characters[rand(0, $charactersLength - 1)];
-    }
-    return $randomString;
-}
-
 function redirect($location)
 {
     header("Location: $location");
 }
 
-function refresh($playername, $token)
+/*function refresh($playername, $token)
 {
-    redirect("game.php?playername=$playername&token=$token");
-}
+    redirect("./game.php?playername=$playername&token=$token");
+}*/
 
 function addParam($param)
 {
@@ -283,8 +274,8 @@ function isTokenValid($dbConn, $playername, $token)
     } else {
         $stmt = mysqli_prepare($dbConn, "INSERT INTO players (playername, token, x, y, r, lastupdated) VALUES (?, ?, ?, ?, ?, ?)");
         $timestamp = date('Y-m-d G:i:s');
-        $x = 0;
-        $y = 0;
+        $x = rand(-10, 10);
+        $y = rand(-10, 10);
         $r = 1;
         mysqli_stmt_bind_param($stmt, "ssiiis", $playername, $token, $x, $y, $r, $timestamp);
         mysqli_stmt_execute($stmt);
@@ -327,20 +318,27 @@ function isAlive($dbConn, $playername)
 function showGame($dbConn, $playername)
 {
     showMenu();
-    listPlayers($dbConn);
-    listBullets($dbConn);
+
+    list($pX, $pY, $pR) = getPlayerCoords($dbConn, $playername);
+    $cX = 6;
+    $cY = 4;
+
+    listPlayers($dbConn, $cX, $cY, $pX, $pY);
+    listBullets($dbConn, $cX, $cY, $pX, $pY);
 }
 
 function showDead($dbConn, $playername)
 {
     $score = getScore($dbConn, $playername);
-    echo "
+
+    redirect("./login.php?gameover=$score");
+    /*echo "
 <div>
   <h1>Game Over!</h1>
   $score Punkte erreicht!
   <!--a href='./game.php?respawn'><h2>Respawn</h2></a-->
 </div>
-";
+";*/
 }
 
 function respawn($dbConn, $playername)
@@ -348,7 +346,7 @@ function respawn($dbConn, $playername)
 
 }
 
-function main($dbConn)
+function main($dbConn, $header, $closeHeader)
 {
     if (isset($_GET["playername"]) && strlen($_GET["playername"]) < 20) {
         $playername = $_GET["playername"];
@@ -361,6 +359,8 @@ function main($dbConn)
 
         if (isTokenValid($dbConn, $playername, $token)) {
             if (isAlive($dbConn, $playername)) {
+                echo $header;
+
                 updatePlayer($dbConn, $playername);
 
                 cleanPlayers($dbConn);
@@ -376,51 +376,53 @@ function main($dbConn)
                     //refresh($playername, $token);
                 }
 
-                showGame($dbConn, $playername); // TODO: redirects before this
+                showGame($dbConn, $playername);
 
                 updateBullets($dbConn);
+
+                echo $closeHeader;
             } else {
                 showDead($dbConn, $playername);
             }
         } else {
+            echo $header;
             echo "Wrong token!";
+            echo $closeHeader;
         }
     } else {
+        echo $header;
         echo "Invalid playername or token! Cannot exceed 20 characters.";
+        echo $closeHeader;
     }
 }
 
-$cacheHtml = true;
-if (!$cacheHtml) {
-    header("Cache-Control: no-cache, no-store, must-revalidate"); // HTTP 1.1
-    header("Pragma: no-cache"); // HTTP 1.0
-    header("Expires: 0"); // Proxies
-}
+?>
 
-$nocachePostfix = '?' . date('Y-m-d G:i:s');
 
-$cacheStyles = false;
-if ($cacheStyles) $stylePostfix = ""; else $stylePostfix = $nocachePostfix;
+<?php
 
-$cacheJs = false;
-if ($cacheJs) $jsPostfix = ""; else $jsPostfix = $nocachePostfix;
-
-echo "
+$header = <<<END
+<!DOCTYPE html>
+<html lang="de">
 <head>
-    <meta charset='UTF-8'>
-    <title>Title</title>
-    <link rel='stylesheet' type='text/css' href='game.css$stylePostfix'>
-    <script src='keyboard.js'></script>
-    <script src='keylistener.js$jsPostfix'></script>
-    <meta name=\"viewport\" content=\"width=device-width, initial-scale=0.5, maximum-scale=0.5, user-scalable=0\">
-    <!--meta http-equiv='refresh' content='1'-->
+    <meta charset="UTF-8">
+    <title>BOOM BOOM BANG</title>
+    <link rel='stylesheet' type="text/css" href="game.css$stylePostfix">
+    <script src="game.js$jsPostfix"></script>
+    <script src="keyboard.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5, user-scalable=0">
+    <!--meta http-equiv="refresh" content="1"-->
 </head>
-";
+<body>
+END;
 
-echo "<body>";
+$closeHeader = <<<END
+</body>
+</html>
+END;
 
-main($dbConn);
 
-echo "</body>";
+main($dbConn, $header, $closeHeader);
 
 ?>
+

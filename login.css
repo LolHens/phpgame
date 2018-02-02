@@ -1,0 +1,32 @@
+html {
+    height: 100%;
+}
+
+body {
+    height: 100%;
+}
+
+#loginwindow {
+    text-align: center;
+    position: relative;
+    top: 20%;
+    color: white;
+}
+
+#logincontent {
+    display: inline-block;
+    text-align: left;
+}
+
+#logintext {
+    line-height: 10px;
+    margin-bottom: 30px;
+}
+
+#loginform {
+    margin-bottom: 20px;
+}
+
+table {
+    border-spacing: 20px 0;
+}

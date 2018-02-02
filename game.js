@@ -63,6 +63,5 @@ document.addEventListener('keydown', function (event) {
 });
 
 setTimeout(function () {
-    if (!exit)
-        window.location.href = "game.php?playername=" + playername + "&token=" + token;
+    if (!exit) window.location.href = "game.php?playername=" + playername + "&token=" + token;
 }, 200);
