@@ -20,11 +20,8 @@ function httpGet(theUrl) {
 var playername = getQueryVariable("playername");
 var token = getQueryVariable("token");
 
-var cX = getQueryVariable("cx");
-var cY = getQueryVariable("cy");
-
-if (cX === undefined) cX = Math.floor(window.innerWidth / 2 / 100);
-if (cY === undefined) cY = Math.floor(window.innerHeight / 2 / 100);
+var cX = Math.floor(window.innerWidth / 2 / 100);
+var cY = Math.floor(window.innerHeight / 2 / 100);
 
 var exit = false;
 

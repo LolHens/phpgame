@@ -132,11 +132,11 @@ function getPlayerCoords($dbConn, $name)
     return array($row["x"], $row["y"], $row["r"]);
 }
 
-function shoot($dbConn, $name, $x, $y, $r)
+function shoot($dbConn, $playername, $token, $x, $y, $r)
 {
-    $stmt = mysqli_prepare($dbConn, "INSERT INTO bullets (x, y, r, playername, lastupdated, created) VALUES (?, ?, ?, ?, ?, ?)");
+    $stmt = mysqli_prepare($dbConn, "INSERT INTO bullets (x, y, r, playername, token, lastupdated, created) VALUES (?, ?, ?, ?, ?, ?, ?)");
     $timestamp = nowWithMillis();
-    mysqli_stmt_bind_param($stmt, "iiisss", $x, $y, $r, $name, $timestamp, $timestamp);
+    mysqli_stmt_bind_param($stmt, "iiissss", $x, $y, $r, $playername, $token, $timestamp, $timestamp);
     mysqli_stmt_execute($stmt);
 }
 
@@ -203,12 +203,23 @@ function updateBullets($dbConn)
     checkCollisions($dbConn);
 }
 
-function addScore($dbConn, $playername, $score)
+function addScore($dbConn, $playername, $token, $score)
 {
-    mysqli_query($dbConn, "SELECT ");
     $stmt = mysqli_prepare($dbConn, "UPDATE players SET score = score + $score WHERE playername = ?");
     mysqli_stmt_bind_param($stmt, "s", $playername);
     mysqli_stmt_execute($stmt);
+
+    $score = getScore($dbConn, $playername, $token);
+    updateLeaderboard($dbConn, $playername, $token, $score);
+}
+
+function updateLeaderboard($dbConn, $playername, $token, $score)
+{
+    if ($score > 0) {
+        $stmt = mysqli_prepare($dbConn, "INSERT INTO leaderboard (playername, token, score) VALUES(?, ?, $score) ON DUPLICATE KEY UPDATE score = $score");
+        mysqli_stmt_bind_param($stmt, "ss", $playername, $token);
+        mysqli_stmt_execute($stmt);
+    }
 }
 
 function hit($dbConn, $playername)
@@ -216,20 +227,20 @@ function hit($dbConn, $playername)
     $stmt = mysqli_prepare($dbConn, "UPDATE players SET dead = 1 WHERE playername = ?");
     mysqli_stmt_bind_param($stmt, "s", $playername);
     mysqli_stmt_execute($stmt);
-    $score = getScore($dbConn, $playername);
+    /*$score = getScore($dbConn, $playername);
     if ($score > 0) {
         $stmt = mysqli_prepare($dbConn, "INSERT INTO leaderboard (playername, score) Values (?, $score)");
         mysqli_stmt_bind_param($stmt, "s", $playername);
         mysqli_stmt_execute($stmt);
-    }
+    }*/
 }
 
 function checkCollisions($dbConn)
 {
-    $result = mysqli_query($dbConn, "SELECT players.playername AS target, bullets.playername AS source FROM bullets, players WHERE bullets.x = players.x AND bullets.y = players.y AND bullets.playername != players.playername AND players.dead = 0");
+    $result = mysqli_query($dbConn, "SELECT players.playername AS target, bullets.playername AS source, bullets.token AS sourcetoken FROM bullets, players WHERE bullets.x = players.x AND bullets.y = players.y AND bullets.playername != players.playername AND players.dead = 0");
     while ($row = mysqli_fetch_array($result)) {
         hit($dbConn, $row["target"]);
-        addScore($dbConn, $row["source"], 10);
+        addScore($dbConn, $row["source"], $row["sourcetoken"], 10);
     }
 }
 
@@ -283,10 +294,10 @@ function isTokenValid($dbConn, $playername, $token)
     }
 }
 
-function getScore($dbConn, $playername)
+function getScore($dbConn, $playername, $token)
 {
-    $stmt = mysqli_prepare($dbConn, "SELECT score FROM players WHERE playername = ?");
-    mysqli_stmt_bind_param($stmt, "s", $playername);
+    $stmt = mysqli_prepare($dbConn, "SELECT score FROM players WHERE playername = ? AND token = ?");
+    mysqli_stmt_bind_param($stmt, "ss", $playername, $token);
     mysqli_stmt_execute($stmt);
     $result = mysqli_stmt_get_result($stmt);
     $numRows = mysqli_num_rows($result);
@@ -325,9 +336,9 @@ function showGame($dbConn, $playername, $cX, $cY)
     listBullets($dbConn, $cX, $cY, $pX, $pY);
 }
 
-function showDead($dbConn, $playername)
+function showDead($dbConn, $playername, $token)
 {
-    $score = getScore($dbConn, $playername);
+    $score = getScore($dbConn, $playername, $token);
 
     redirect("./login.php?gameover=$score");
     /*echo "
@@ -373,7 +384,7 @@ function main($dbConn, $header, $closeHeader)
 
                 if (isset($_GET["shoot"]) && $_GET["shoot"] > 0) {
                     list($x, $y, $r) = getPlayerCoords($dbConn, $playername);
-                    shoot($dbConn, $playername, $x, $y, $r);
+                    shoot($dbConn, $playername, $token, $x, $y, $r);
                     //refresh($playername, $token);
                 }
 
@@ -383,7 +394,7 @@ function main($dbConn, $header, $closeHeader)
 
                 echo $closeHeader;
             } else {
-                showDead($dbConn, $playername);
+                showDead($dbConn, $playername, $token);
             }
         } else {
             echo $header;
