@@ -315,13 +315,11 @@ function isAlive($dbConn, $playername)
     }
 }
 
-function showGame($dbConn, $playername)
+function showGame($dbConn, $playername, $cX, $cY)
 {
     showMenu();
 
     list($pX, $pY, $pR) = getPlayerCoords($dbConn, $playername);
-    $cX = 6;
-    $cY = 4;
 
     listPlayers($dbConn, $cX, $cY, $pX, $pY);
     listBullets($dbConn, $cX, $cY, $pX, $pY);
@@ -357,6 +355,9 @@ function main($dbConn, $header, $closeHeader)
             $token = $_GET["token"];
         }
 
+        $cX = (isset($_GET["cx"]) ? $_GET["cx"] : 0);
+        $cY = (isset($_GET["cy"]) ? $_GET["cy"] : 0);
+
         if (isTokenValid($dbConn, $playername, $token)) {
             if (isAlive($dbConn, $playername)) {
                 echo $header;
@@ -376,7 +377,7 @@ function main($dbConn, $header, $closeHeader)
                     //refresh($playername, $token);
                 }
 
-                showGame($dbConn, $playername);
+                showGame($dbConn, $playername, $cX, $cY);
 
                 updateBullets($dbConn);
 

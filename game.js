@@ -17,15 +17,21 @@ function httpGet(theUrl) {
     return xmlHttp.responseText;
 }
 
-playername = getQueryVariable("playername");
-token = getQueryVariable("token");
+var playername = getQueryVariable("playername");
+var token = getQueryVariable("token");
 
-exit = false;
+var cX = getQueryVariable("cx");
+var cY = getQueryVariable("cy");
+
+if (cX === undefined) cX = Math.floor(window.innerWidth / 2 / 100);
+if (cY === undefined) cY = Math.floor(window.innerHeight / 2 / 100);
+
+var exit = false;
 
 document.addEventListener('keydown', function (event) {
     var key = event.which;
 
-    direction = -1;
+    var direction = -1;
     switch (key) {
         /*case 38:
             direction = 0;
@@ -53,15 +59,17 @@ document.addEventListener('keydown', function (event) {
             break;
     }
 
-    shoot = 0;
+    var shoot = 0;
     if (key === 32) shoot = 1;
 
     if (direction >= 0 || shoot > 0) {
         exit = true;
-        window.location = "game.php?playername=" + playername + "&token=" + token + "&move=" + direction + "&shoot=" + shoot;
+        window.location = "game.php?playername=" + playername + "&token=" + token + "&cx=" + cX + "&cy=" + cY + "&move=" + direction + "&shoot=" + shoot;
     }
 });
 
 setTimeout(function () {
-    if (!exit) window.location.href = "game.php?playername=" + playername + "&token=" + token;
+    if (!exit) {
+        window.location.href = "game.php?playername=" + playername + "&token=" + token + "&cx=" + cX + "&cy=" + cY;
+    }
 }, 200);
