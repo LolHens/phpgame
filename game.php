@@ -29,7 +29,7 @@ function renderPlayer($name, $score, $x, $y, $deg)
     echo "
 <div class='player' style='left: {$x}px; top: {$y}px;'>
     <div style='display: block; text-align: center;'>$htmlname</div>
-    <img src='player.png' style='transform: rotate({$deg}deg);'>
+    <img src='./player.png' style='transform: rotate({$deg}deg);'>
 </div>
 ";
 }
@@ -40,7 +40,7 @@ function renderBullet($x, $y, $r, $offsetPercent)
 
     $offset = ($animTime * $offsetPercent) / 100;
 
-    echo "<img class='bullet' src='bullet.png' data-r='$r' style='left: {$x}px; top: {$y}px; animation-delay: -{$offset}ms;'>";
+    echo "<img class='bullet' src='./bullet.png' data-r='$r' style='left: {$x}px; top: {$y}px; animation-delay: -{$offset}ms;'>";
 }
 
 function playerTile($name, $score, $tileX, $tileY, $r)
@@ -263,11 +263,11 @@ function showMenu()
 {
     echo "
 <div id='controls'>
-    <a href='./game.php?" . $_SERVER['QUERY_STRING'] . "&move=3'><img class='button' src='left.png'></a>
-    <a href='./game.php?" . $_SERVER['QUERY_STRING'] . "&move=1'><img class='button' src='right.png'></a>
-    <a href='./game.php?" . $_SERVER['QUERY_STRING'] . "&move=0'><img class='button' src='up.png'></a>
-    <a href='./game.php?" . $_SERVER['QUERY_STRING'] . "&move=2'><img class='button' src='down.png'></a>
-    <a href='./game.php?" . $_SERVER['QUERY_STRING'] . "&shoot=1'><img class='button' src='shoot.png'></a>
+    <a href='./game.php?" . $_SERVER['QUERY_STRING'] . "&move=3'><img class='button' src='./left.png'></a>
+    <a href='./game.php?" . $_SERVER['QUERY_STRING'] . "&move=1'><img class='button' src='./right.png'></a>
+    <a href='./game.php?" . $_SERVER['QUERY_STRING'] . "&move=0'><img class='button' src='./up.png'></a>
+    <a href='./game.php?" . $_SERVER['QUERY_STRING'] . "&move=2'><img class='button' src='./down.png'></a>
+    <a href='./game.php?" . $_SERVER['QUERY_STRING'] . "&shoot=1'><img class='button' src='./shoot.png'></a>
 </div>
 ";
 }
@@ -437,4 +437,3 @@ END;
 main($dbConn, $header, $closeHeader);
 
 ?>
-

@@ -25,7 +25,7 @@ $dbName = "game";
 $dbConn = mysqli_connect($dbHost, $dbUser, $dbPass, $dbName)
 or exit("Keine Verbindung zu MySQL");
 
-$cacheHtml = true;
+$cacheHtml = false;
 $cacheStyles = false;
 $cacheJs = false;
 
