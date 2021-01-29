@@ -40,13 +40,6 @@ include "dbconn.php";
                     <th>Score</th>
                 </tr>
                 <?php
-                /**
-                 * Created by IntelliJ IDEA.
-                 * User: pierr
-                 * Date: 01.02.2018
-                 * Time: 10:54
-                 */
-
                 $result = mysqli_query($dbConn, "SELECT playername, score FROM leaderboard ORDER BY score DESC LIMIT 10");
                 while ($row = mysqli_fetch_array($result)) {
                     echo "

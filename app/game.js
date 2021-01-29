@@ -18,7 +18,7 @@ function httpGet(theUrl) {
 }
 
 var playername = getQueryVariable("playername");
-var token = getQueryVariable("token");
+var token = getQueryVariable("token")||"";
 
 var cX = Math.floor(window.innerWidth / 2 / 100);
 var cY = Math.floor(window.innerHeight / 2 / 100);
