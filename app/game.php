@@ -1,12 +1,5 @@
 <?php
 
-/**
- * Created by IntelliJ IDEA.
- * User: pierr
- * Date: 13.12.2017
- * Time: 12:33
- */
-
 include "dbconn.php";
 
 function degrees($r)
@@ -407,11 +400,6 @@ function main($dbConn, $header, $closeHeader)
         echo $closeHeader;
     }
 }
-
-?>
-
-
-<?php
 
 $header = <<<END
 <!DOCTYPE html>
