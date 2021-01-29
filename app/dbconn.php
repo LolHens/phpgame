@@ -17,10 +17,10 @@ function genToken($length)
     return $randomString;
 }
 
-$dbHost = "localhost";
-$dbUser = "root";
-$dbPass = "";
-$dbName = "game";
+$dbHost = getenv("DB_HOST");
+$dbUser = getenv("DB_USERNAME");
+$dbPass = getenv("DB_PASSWORD");
+$dbName = getenv("DB_NAME");
 
 $dbConn = mysqli_connect($dbHost, $dbUser, $dbPass, $dbName)
 or exit("Keine Verbindung zu MySQL");
