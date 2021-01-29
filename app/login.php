@@ -1,11 +1,8 @@
-<!DOCTYPE html>
-<html lang="de">
-
 <?php
 include "dbconn.php";
 ?>
-
-<html>
+<!DOCTYPE html>
+<html lang="de">
 <head>
     <meta charset="UTF-8">
     <title>BOOM BOOM BANG Login</title>
