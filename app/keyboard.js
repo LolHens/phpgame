@@ -45,9 +45,9 @@ notes = [
     {key: "-", freq: 130.81, type: "square"},
     {key: "ä", freq: 138.59, type: "square"},
     {key: "SHIFT", freq: 146.83, type: "square"},
-    {key: "#", freq: 155.56, type: "square"}*/
+    {key: "#", freq: 155.56, type: "square"}
 
-    {key: "SPACE", freq: 82.41, type: "square"}
+    {key: "SPACE", freq: 82.41, type: "square"}*/
 ]
 
 function keyCode(string) {
