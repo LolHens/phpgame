@@ -21,7 +21,7 @@ include "dbconn.php";
             if (isset($_GET["gameover"])) {
                 $score = $_GET["gameover"];
                 $killedBy = "";
-                if (isset($_GET["gameover"]) && $killedBy = $_GET["killedby"] !== "") {
+                if (isset($_GET["killedby"]) && ($killedBy = $_GET["killedby"]) !== "") {
                     $killedBy = " durch $killedBy";
                 }
                 echo "
