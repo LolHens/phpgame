@@ -215,10 +215,10 @@ function updateLeaderboard($dbConn, $playername, $token, $score)
     }
 }
 
-function hit($dbConn, $playername)
+function hit($dbConn, $playername, $source)
 {
-    $stmt = mysqli_prepare($dbConn, "UPDATE players SET dead = 1 WHERE playername = ?");
-    mysqli_stmt_bind_param($stmt, "s", $playername);
+    $stmt = mysqli_prepare($dbConn, "UPDATE players SET dead = 1, killedby = ? WHERE playername = ?");
+    mysqli_stmt_bind_param($stmt, "ss", $source, $playername);
     mysqli_stmt_execute($stmt);
     /*$score = getScore($dbConn, $playername);
     if ($score > 0) {
@@ -232,7 +232,7 @@ function checkCollisions($dbConn)
 {
     $result = mysqli_query($dbConn, "SELECT players.playername AS target, bullets.playername AS source, bullets.token AS sourcetoken FROM bullets, players WHERE bullets.x = players.x AND bullets.y = players.y AND bullets.playername != players.playername AND players.dead = 0");
     while ($row = mysqli_fetch_array($result)) {
-        hit($dbConn, $row["target"]);
+        hit($dbConn, $row["target"], $row["source"]);
         addScore($dbConn, $row["source"], $row["sourcetoken"], 10);
     }
 }
@@ -301,6 +301,24 @@ function getScore($dbConn, $playername, $token)
         return 0;
 }
 
+function getKilledBy($dbConn, $playername, $token)
+{
+    $stmt = mysqli_prepare($dbConn, "SELECT killedby FROM players WHERE playername = ? AND token = ?");
+    mysqli_stmt_bind_param($stmt, "ss", $playername, $token);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    $numRows = mysqli_num_rows($result);
+    if ($numRows > 0) {
+        $row = mysqli_fetch_assoc($result);
+        if ($row["killedby"] === null) {
+            return "";
+        } else {
+            return $row["killedby"];
+        }
+    } else
+        return "";
+}
+
 function isAlive($dbConn, $playername)
 {
     $stmt = mysqli_prepare($dbConn, "SELECT dead FROM players WHERE playername = ?");
@@ -332,8 +350,9 @@ function showGame($dbConn, $playername, $cX, $cY)
 function showDead($dbConn, $playername, $token)
 {
     $score = getScore($dbConn, $playername, $token);
+    $killedBy = getKilledBy($dbConn, $playername, $token);
 
-    redirect("./login.php?gameover=$score");
+    redirect("./login.php?gameover=$score&killedby=$killedBy");
     /*echo "
 <div>
   <h1>Game Over!</h1>

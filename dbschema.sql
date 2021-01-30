@@ -27,5 +27,6 @@ CREATE TABLE players
   r           INT                                 NOT NULL,
   lastupdated TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
   score       INT DEFAULT '0'                     NOT NULL,
-  dead        CHAR DEFAULT '0'                    NOT NULL
+  dead        CHAR DEFAULT '0'                    NOT NULL,
+  killedby    VARCHAR(255)                        NULL
 );

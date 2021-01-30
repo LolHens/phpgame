@@ -20,8 +20,12 @@ include "dbconn.php";
             <?php
             if (isset($_GET["gameover"])) {
                 $score = $_GET["gameover"];
+                $killedBy = $_GET["killedby"];
+                if ($killedBy !== "") {
+                    $killedBy = " durch $killedBy";
+                }
                 echo "
-<h2>Game Over!</h2>
+<h2>Game Over$killedBy!</h2>
 <h2>Du hast $score Punkte erreicht!</h2>
 ";
             }
